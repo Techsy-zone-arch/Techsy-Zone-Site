@@ -170,38 +170,42 @@ html:not(.dark) textarea.bg-slate-950::placeholder {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(6, 182, 212, 0.7);
 }
-/* إعدادات مرنة 100% لجميع الشاشات ومنع الاقتطاع */
+/* 1. ضبط الحاوية الجذرية ومنع التمدد الأفقي */
 html, body, #root {
   width: 100% !important;
   max-width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
-  overflow-x: hidden;
+  overflow-x: hidden !important;
   box-sizing: border-box;
 }
 
-/* إجبار الخلفيات على الامتداد دون التأثير على المحتوى */
-.tech-grid-bg, .tech-grid-bg-light {
+/* 2. إجبار العناصر الممتدة خارج الإطار على الالتفاف والانضغاط */
+div, section, main, header, footer {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 3. حل مشكلة الأقسام التي تحتوي على Flex وتمنع الالتفاف في الموبايل */
+.flex {
+  flex-wrap: wrap !important; /* تجبر الأزرار أو العناصر الجانبية على النزول لسطر جديد بدل الخروج عن الشاشة */
+}
+
+/* 4. إلغاء أي قيم عرض ثابتة بالبكسل قد تكون مسببة للمشكلة وتغطيتها بعرض مرن */
+*[class*="w-"] {
+  max-width: 100% !important;
+}
+
+/* 5. ترك هوامش أمان داخلية للأقسام الرئيسية لتبدو منسقة على الموبايل */
+.max-w-7xl, .max-w-6xl, .container, main {
   width: 100% !important;
   max-width: 100% !important;
-  min-height: 100vh !important;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
 }
 
-/* حل مشكلة اقتطاع العناصر الداخلية وإجبارها على التجاوب */
-*, ::before, ::after {
-  box-sizing: inherit;
-}
-
-/* جعل أي حاوية كبيرة تتكيف تلقائياً مع حجم الشاشات الصغيرة */
-.max-w-7xl, .max-w-6xl, .container {
-  max-width: 100% !important;
-  width: 100% !important;
-  padding-left: 1rem !important;  /* ترك مسافة أمان صغيرة على الأطراف */
-  padding-right: 1rem !important;
-}
-
-/* حماية الصور والجداول من الخروج عن نطاق شاشة الموبايل */
-img, table, svg {
+/* 6. حماية الصور والأيقونات من التمدد الزائد */
+img, svg {
   max-width: 100% !important;
   height: auto !important;
 }
