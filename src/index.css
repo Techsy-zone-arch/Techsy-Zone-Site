@@ -170,18 +170,38 @@ html:not(.dark) textarea.bg-slate-950::placeholder {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(6, 182, 212, 0.7);
 }
-/* تنسيقات آمنة لتوسيع الشاشة دون كسر الموقع */
+/* إعدادات مرنة 100% لجميع الشاشات ومنع الاقتطاع */
 html, body, #root {
   width: 100% !important;
   max-width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
-  overflow-x: hidden; /* يمنع ظهور شريط التمرير الأفقي في الهواتف */
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
-/* إجبار الخلفيات التقنية الشبكية على الامتداد الكامل */
+/* إجبار الخلفيات على الامتداد دون التأثير على المحتوى */
 .tech-grid-bg, .tech-grid-bg-light {
   width: 100% !important;
   max-width: 100% !important;
   min-height: 100vh !important;
+}
+
+/* حل مشكلة اقتطاع العناصر الداخلية وإجبارها على التجاوب */
+*, ::before, ::after {
+  box-sizing: inherit;
+}
+
+/* جعل أي حاوية كبيرة تتكيف تلقائياً مع حجم الشاشات الصغيرة */
+.max-w-7xl, .max-w-6xl, .container {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding-left: 1rem !important;  /* ترك مسافة أمان صغيرة على الأطراف */
+  padding-right: 1rem !important;
+}
+
+/* حماية الصور والجداول من الخروج عن نطاق شاشة الموبايل */
+img, table, svg {
+  max-width: 100% !important;
+  height: auto !important;
 }
