@@ -1,0 +1,6 @@
+{
+  "name": "TechsyZone - منصة وساطة ومتجر الحواسيب واللابتوبات",
+  "description": "منصة TechsyZone للوساطة التقنية ومتجر الحواسيب واللابتوبات واكسسواراتها، تواصل مباشر، فواتير معتمدة وبدون أي عمولة إضافية على المشتري.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

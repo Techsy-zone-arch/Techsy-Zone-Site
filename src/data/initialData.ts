@@ -1,0 +1,466 @@
+import { Product, PartnerStore, OrderItem, Subscriber, PaymentMethod, CustomBuilderElement, SiteConfig } from '../types';
+
+import heroWorkstationImg from '../assets/images/hero_tech_workstation_1791263330543.jpg';
+import laptopProImg from '../assets/images/laptop_flagship_pro_1791263342097.jpg';
+import desktopPcImg from '../assets/images/desktop_pc_tower_1791263351466.jpg';
+import monitorImg from '../assets/images/tech_ultrawide_monitor_1791263362907.jpg';
+import logoMarkImg from '../assets/images/techsyzone_logo_mark_1791263372552.jpg';
+
+export const initialSiteConfig: SiteConfig = {
+  brandName: 'TechsyZone',
+  brandSubtitle: 'المنصة المعتمدة لوساطة الحواسيب، اللابتوبات، واكسسواراتها الاحترافية',
+  logoUrl: logoMarkImg,
+  faviconUrl: logoMarkImg,
+  splashScreenEnabled: true,
+  splashDurationSec: 2.2,
+  
+  whatsAppNumber: '+963988112233',
+  messengerUrl: 'https://m.me/techsyzone.official',
+  facebookPageUrl: 'https://facebook.com/techsyzone',
+  instagramPageUrl: 'https://instagram.com/techsyzone',
+  adminNotificationEmail: 'operations@techsyzone.com',
+  backupDriveEmail: 'yoashaheen@gmail.com',
+  adminPassword: '262028Yosh@@',
+  
+  heroMainTitle: 'TechsyZone',
+  heroMainSubtitle: 'وساطتك الآمنة لأقوى الحواسيب واللابتوبات',
+  heroMainDescription: 'نحن حلقة الوصل المباشرة بينك وبين نخبة المتاجر التقنية المعتمدة. نضمن لك اختيار أفضل جهاز لابتوب، حاسوب مكتبي، أو قطع هاردوير بمواصفات حقيقية وكفالة رسمية.',
+  liveEditorActive: false,
+  
+  primaryColor: 'cyan',
+  fontFamily: 'Cairo',
+  defaultTheme: 'dark',
+  
+  announcementText: '⚡ ضمان شفافية كامل: أسعارنا مطابقة تماماً للمتاجر الشريكة بالدولار ($) بدون أي مليم إضافي فوق سعر الجهاز.',
+  announcementActive: true,
+  
+  brokerageExplanation: `نحن في TechsyZone منصة وساطة تقنية متخصصة ومستقلة، نربط بين المشتري الباحث عن لابتوب أو حاسوب بمواصفات دقيقة وأفضل المتاجر التقنية المعتمدة والمرخصة.
+
+مهمتنا الأساسية هي فحص توفر الأجهزة، التحقق من المواصفات الفنية الحقيقية، التفاوض نيابة عنك لتأمين أفضل جهاز يناسب ميزانيتك، وتسهيل عملية الطلب والاستلام بأعلى معايير الأمان والمصداقية.`,
+
+  zeroCommissionStatement: `نؤكد بشكل قاطع ورسمي أن TechsyZone لا تتقاضى أي عمولة أو مبالغ إضافية فوق سعر الجهاز من المشتري مطلقاً!
+
+العمولة المستحقة لوساطتنا مخصومة بالكامل من هامش ربح المتجر الشريك الذي يتعامل معنا، وبالتالي فإن السعر الذي تراه في منصتنا وتدفعه هو نفس السعر الرسمي الذي ستجده في المتجر مباشرة. لا توجد أي تكاليف خفية، ولا أعباء مالية مضافة على المشتري.`,
+
+  privacyPolicy: `تولي منصة TechsyZone أهمية قصوى لخصوصية عملائها وأمان بياناتهم:
+1. تشفير البيانات: يتم تشفير وحماية كافة بيانات الحساب والبريد الإلكتروني وأرقام التواصل وفق أعلى المعايير الرقمية.
+2. استخدام البيانات: تُستخدم معلوماتك حصراً لمتابعة تسليم طلبك وإرسال التحديثات الدورية للأسعار (كل سبت) في حال رغبتك.
+3. عدم مشاركة البيانات: لا نقوم ببيع أو مشاركة بياناتك مع أي طرف ثالث لأغراض إعلانية غير مرغوب فيها.
+4. حق الحذف والتعديل: يحق لك في أي وقت إلغاء اشتراكك في النشرة الأسبوعية أو طلب مسح سجل بياناتك من خلال التواصل معنا.`,
+
+  saturdayDigestSubject: 'نشرة TechsyZone الأسبوعية: أحدث أسعار اللابتوبات والكمبيوترات المتوفرة (السبت)',
+  saturdayDigestBody: 'مرحباً بك في النشرة التقنية الأسبوعية ليوم السبت من TechsyZone. قمنا بتحديث قوائم الأسعار لجميع أجهزة اللابتوب الاحترافية والحواسيب المجمعة مع توفر قطع جديدة وكفالات رسمية. يمكنك الاطلاع على كامل الأجهزة والطلب المباشر بضمان عدم وجود أي عمولة إضافية.'
+};
+
+export const initialPartnerStores: PartnerStore[] = [
+  {
+    id: 'store_1',
+    name: 'سيريا تك سنتر (SyriaTech Center)',
+    city: 'دمشق',
+    address: 'شارع البحصة التقني - مجمع التقنيات الحديثة',
+    phone: '+96311223344',
+    whatsapp: '+963944556677',
+    rating: 4.9,
+    activeItemsCount: 42,
+    description: 'وكيل وموزع معتمد لأجهزة ASUS ROG و Lenovo Legion و Dell مع مركز صيانة متكامل.',
+    verified: true,
+    joinedYear: '2023'
+  },
+  {
+    id: 'store_2',
+    name: 'ماسترز برو كمبيوتر (Masters Pro PC)',
+    city: 'حلب',
+    address: 'حي الجميلية - شارع الحواسيب الرئيسي',
+    phone: '+96321224466',
+    whatsapp: '+963955667788',
+    rating: 4.8,
+    activeItemsCount: 35,
+    description: 'متخصصون في تجميع أجهزة القيمنق الاحترافية ومحطات العمل للتصميم الهندسي والرندرة.',
+    verified: true,
+    joinedYear: '2024'
+  },
+  {
+    id: 'store_3',
+    name: 'ألفا للحلول الرقمية (Alpha Digital)',
+    city: 'اللاذقية',
+    address: 'شارع 8 آذار - برج الأندلس التقني',
+    phone: '+96341334455',
+    whatsapp: '+963966778899',
+    rating: 4.9,
+    activeItemsCount: 28,
+    description: 'أفضل الخيارات لأجهزة رجال الأعمال الخفيفة Ultrabooks وشاشات العرض الاحترافية.',
+    verified: true,
+    joinedYear: '2023'
+  },
+  {
+    id: 'store_4',
+    name: 'ميغابايت هاردوير (Megabyte Hardware)',
+    city: 'حمص',
+    address: 'شارع الدبلان - مقابل المجمع التجاري',
+    phone: '+96331445566',
+    whatsapp: '+963977889900',
+    rating: 4.7,
+    activeItemsCount: 30,
+    description: 'استيراد مباشر لأحدث كروت الشاشة RTX 40 وقطع الهاردوير وملحقات الحواسيب الميكانيكية.',
+    verified: true,
+    joinedYear: '2024'
+  }
+];
+
+export const initialProducts: Product[] = [
+  {
+    id: 'prod_1',
+    name: 'Lenovo Legion Pro 7i Gen 9 (RTX 4080)',
+    category: 'laptops_gaming',
+    price: 2450,
+    originalStorePrice: 2450,
+    storeId: 'store_1',
+    storeName: 'سيريا تك سنتر (SyriaTech Center)',
+    storeLocation: 'دمشق',
+    specs: {
+      processor: 'Intel Core i9-14900HX (24 Cores / 32 Threads)',
+      gpu: 'NVIDIA GeForce RTX 4080 12GB GDDR6 (175W TGP)',
+      ram: '32GB DDR5 5600MHz (قابل للتوسعة)',
+      storage: '2TB NVMe PCIe 4.0 SSD M.2',
+      display: '16" WQXGA (2560x1600) IPS 240Hz 500nits 100% DCI-P3 G-Sync',
+      condition: 'جديد بالكرتون',
+      warranty: 'ضمان رسمي سنة كاملة شامل قطع التبديل'
+    },
+    inStock: true,
+    image: laptopProImg,
+    badge: 'الوحش الأقوى',
+    commissionAmount: 110,
+    commissionRatePercent: 4.5,
+    description: 'لابتوب ألعاب وهندسة فائق القوة مع تبريد بخاري Legion Coldfront Vapor ومحول طاقة 330W الأصلي.',
+    featured: true
+  },
+  {
+    id: 'prod_2',
+    name: 'ASUS ROG Zephyrus G16 OLED (Ultra 9 + RTX 4070)',
+    category: 'laptops_gaming',
+    price: 2180,
+    originalStorePrice: 2180,
+    storeId: 'store_1',
+    storeName: 'سيريا تك سنتر (SyriaTech Center)',
+    storeLocation: 'دمشق',
+    specs: {
+      processor: 'Intel Core Ultra 9 185H مع وحدة معالجة الذكاء الاصطناعي NPU',
+      gpu: 'NVIDIA GeForce RTX 4070 8GB GDDR6',
+      ram: '32GB LPDDR5X 7467MHz Onboard',
+      storage: '1TB M.2 NVMe PCIe 4.0 SSD',
+      display: '16" 2.5K (2560x1600) ROG Nebula OLED 240Hz 0.2ms HDR True Black 500',
+      condition: 'جديد بالكرتون',
+      warranty: 'كفالة مصنعية ASUS لمدة 12 شهراً'
+    },
+    inStock: true,
+    image: laptopProImg,
+    badge: 'الأكثر نحافة وأناقة',
+    commissionAmount: 95,
+    commissionRatePercent: 4.3,
+    description: 'تصميم ألمنيوم أنودايز فائق الفخامة بسماكة 1.49 سم وشاشة OLED سينمائية مبهرة لصناع المحتوى واللاعبين.',
+    featured: true
+  },
+  {
+    id: 'prod_3',
+    name: 'Dell XPS 16 (Core Ultra 7 / 32GB / 1TB / RTX 4060)',
+    category: 'laptops_business',
+    price: 1950,
+    originalStorePrice: 1950,
+    storeId: 'store_3',
+    storeName: 'ألفا للحلول الرقمية (Alpha Digital)',
+    storeLocation: 'اللاذقية',
+    specs: {
+      processor: 'Intel Core Ultra 7 155H (16 Cores)',
+      gpu: 'NVIDIA GeForce RTX 4060 8GB GDDR6',
+      ram: '32GB LPDDR5X 6400MHz',
+      storage: '1TB PCIe 4.0 NVMe SSD',
+      display: '16.3" FHD+ InfinityEdge ضد التوهج 500 nits',
+      condition: 'جديد بالكرتون',
+      warranty: 'ضمان ديل الرسمي 12 شهر'
+    },
+    inStock: true,
+    image: laptopProImg,
+    badge: 'فئة رجال الأعمال والمصممين',
+    commissionAmount: 85,
+    commissionRatePercent: 4.3,
+    description: 'تحفة ديل الهندسية مع تاتش باد زجاجي مدمج غير مرئي ولوحة مفاتيح انسيابية بدون فواصل.',
+    featured: false
+  },
+  {
+    id: 'prod_4',
+    name: 'CyberStation Titanium PC (Core i9 14900K + RTX 4090 24GB)',
+    category: 'desktops_gaming',
+    price: 3650,
+    originalStorePrice: 3650,
+    storeId: 'store_2',
+    storeName: 'ماسترز برو كمبيوتر (Masters Pro PC)',
+    storeLocation: 'حلب',
+    specs: {
+      processor: 'Intel Core i9-14900K Unlocked (24 Cores / Up to 6.0GHz)',
+      gpu: 'ASUS ROG Strix GeForce RTX 4090 OC 24GB GDDR6X',
+      ram: '64GB (2x32GB) Corsair Dominator Titanium DDR5 6400MHz',
+      storage: '2TB Samsung 990 PRO NVMe (7450 MB/s) + 4TB WD Black HDD',
+      display: 'محطة مكتبية تدعم حتى 4 شاشات بدقة 8K',
+      condition: 'جديد بالكرتون',
+      warranty: 'كفالة تجميع وفحص مصنعي سنتان كاملتان'
+    },
+    inStock: true,
+    image: desktopPcImg,
+    badge: 'أعلى أداء على الإطلاق',
+    commissionAmount: 180,
+    commissionRatePercent: 5.0,
+    description: 'تجميعة الأحلام مع تبريد مائي مغلق 360mm ومزود طاقة Seasonic Vertex 1200W ATX 3.0 Platinum وكيس فاخر بزجاج مقوى.',
+    featured: true
+  },
+  {
+    id: 'prod_5',
+    name: 'WorkStation Architect Pro (Ryzen 9 7950X / RTX 4070 Ti Super)',
+    category: 'desktops_workstation',
+    price: 2480,
+    originalStorePrice: 2480,
+    storeId: 'store_2',
+    storeName: 'ماسترز برو كمبيوتر (Masters Pro PC)',
+    storeLocation: 'حلب',
+    specs: {
+      processor: 'AMD Ryzen 9 7950X (16 Cores / 32 Threads)',
+      gpu: 'MSI Gaming X Slim RTX 4070 Ti Super 16GB GDDR6X',
+      ram: '64GB Kingston Fury Beast DDR5 6000MHz EXPO',
+      storage: '2TB Kingston KC3000 PCIe 4.0 NVMe SSD',
+      display: 'مجهز للأوتوكاد والرندر ومحركات Unreal Engine',
+      condition: 'جديد بالكرتون',
+      warranty: 'كفالة استبدال فوري للقطع 12 شهراً'
+    },
+    inStock: true,
+    image: desktopPcImg,
+    badge: 'مثالي للمهندسين والمصممين',
+    commissionAmount: 110,
+    commissionRatePercent: 4.4,
+    description: 'محطة عمل صامتة ومستقرة تماماً تحت الضغط العالي مع كيس Fractal Design مبطن بعوازل صوتية.',
+    featured: false
+  },
+  {
+    id: 'prod_6',
+    name: 'Samsung Odyssey Neo G9 49" Dual QHD Curved 240Hz',
+    category: 'monitors',
+    price: 1390,
+    originalStorePrice: 1390,
+    storeId: 'store_3',
+    storeName: 'ألفا للحلول الرقمية (Alpha Digital)',
+    storeLocation: 'اللاذقية',
+    specs: {
+      processor: 'معالج معالجة الصور Quantum Mini-LED',
+      gpu: 'متوافق مع G-Sync و FreeSync Premium Pro',
+      ram: 'لوحة Mini LED مع 2048 منطقة تعتيم محلي',
+      storage: 'منافذ 2x HDMI 2.1 + 1x DisplayPort 1.4 + USB Hub',
+      display: '49" 32:9 (5120x1440) انحناء 1000R فائق 240Hz 1ms HDR2000',
+      condition: 'جديد بالكرتون',
+      warranty: 'كفالة سامسونج الرسمية 12 شهراً'
+    },
+    inStock: true,
+    image: monitorImg,
+    badge: 'تجربة بصرية لا تضاهى',
+    commissionAmount: 65,
+    commissionRatePercent: 4.6,
+    description: 'شاشة ألترا وايد تعادل شاشتين 27 بوصة بجانب بعضهما بدون أي حواف فاصلة مع انحناء يطابق مجال رؤية العين البشرية.',
+    featured: true
+  },
+  {
+    id: 'prod_7',
+    name: 'NVIDIA GeForce RTX 4080 Super 16GB ASUS TUF Gaming',
+    category: 'hardware_gpu',
+    price: 1180,
+    originalStorePrice: 1180,
+    storeId: 'store_4',
+    storeName: 'ميغابايت هاردوير (Megabyte Hardware)',
+    storeLocation: 'حمص',
+    specs: {
+      processor: '10,240 CUDA Cores / 3rd Gen RT Cores',
+      gpu: 'NVIDIA Ada Lovelace Architecture',
+      ram: '16GB GDDR6X 23 Gbps 256-bit',
+      storage: 'يتطلب مزود طاقة 750W أو أعلى',
+      display: '3x DisplayPort 1.4a + 2x HDMI 2.1a',
+      condition: 'جديد بالكرتون',
+      warranty: 'كفالة أسوس الرسمية 24 شهراً'
+    },
+    inStock: true,
+    image: desktopPcImg,
+    badge: 'توفر فوري',
+    commissionAmount: 50,
+    commissionRatePercent: 4.2,
+    description: 'كرت الشاشة الأقوى للعب بدقة 4K مع تشغيل تتبع الأشعة وتقنية توليد الإطارات DLSS 3.5.',
+    featured: false
+  },
+  {
+    id: 'prod_8',
+    name: 'حزمة ملحقات احترافية: كيبورد ميكانيكي + ماوس لاسلكي فائق الدقة',
+    category: 'accessories',
+    price: 240,
+    originalStorePrice: 240,
+    storeId: 'store_4',
+    storeName: 'ميغابايت هاردوير (Megabyte Hardware)',
+    storeLocation: 'حمص',
+    specs: {
+      processor: 'مستشعر Focus Pro 30K Optical Sensor',
+      gpu: 'سويتشات ميكانيكية مخصصة قابلة للتبديل الساخن Hot-swappable',
+      ram: 'بطارية تدوم حتى 90 ساعة استخدام متواصل',
+      storage: 'كابل تايب سي مضفر + دونجل لاسلكي 2.4GHz',
+      display: 'إضاءة RGB ديناميكية مخصصة لكل مفتاح',
+      condition: 'جديد بالكرتون',
+      warranty: 'كفالة استبدال لمدة 6 أشهر'
+    },
+    inStock: true,
+    image: heroWorkstationImg,
+    badge: 'طقم الأداء المميز',
+    commissionAmount: 18,
+    commissionRatePercent: 7.5,
+    description: 'طقم متكامل للاعبين والمبرمجين يجمع بين أسرع استجابة ضغط وحرية الحركة اللاسلكية المطلقة.',
+    featured: false
+  }
+];
+
+export const initialOrders: OrderItem[] = [
+  {
+    id: 'ORD-2026-9812',
+    customerName: 'م. أحمد الخالد',
+    customerPhone: '+963933112233',
+    customerEmail: 'ahmad.khaled@example.com',
+    productId: 'prod_1',
+    productName: 'Lenovo Legion Pro 7i Gen 9 (RTX 4080)',
+    productPrice: 2450,
+    storeId: 'store_1',
+    storeName: 'سيريا تك سنتر (SyriaTech Center)',
+    commissionAmount: 110,
+    orderDate: '2026-03-28',
+    orderTime: '14:35',
+    status: 'confirmed_by_admin',
+    clientReceivedAt: '2026-03-29 18:20',
+    adminConfirmedAt: '2026-03-29 19:00',
+    notes: 'تم فحص الجهاز في المتجر واستلمه العميل مع الفاتورة والكفالة الرسمية.'
+  },
+  {
+    id: 'ORD-2026-9844',
+    customerName: 'د. طارق السعدي',
+    customerPhone: '+963955443322',
+    customerEmail: 'tariq.saadi@example.com',
+    productId: 'prod_6',
+    productName: 'Samsung Odyssey Neo G9 49" Dual QHD Curved 240Hz',
+    productPrice: 1390,
+    storeId: 'store_3',
+    storeName: 'ألفا للحلول الرقمية (Alpha Digital)',
+    commissionAmount: 65,
+    orderDate: '2026-04-02',
+    orderTime: '11:15',
+    status: 'received_by_client',
+    clientReceivedAt: '2026-04-03 16:45',
+    notes: 'قام العميل بالضغط على زر "تم الاستلام" بنجاح، بانتظار تحصيل العمولة من المتجر.'
+  }
+];
+
+export const initialSubscribers: Subscriber[] = [
+  {
+    id: 'sub_1',
+    email: 'khalil.tech.sy@gmail.com',
+    maskedEmail: 'k***l@g***l.com',
+    name: 'خليل العلي',
+    phone: '+963944112233',
+    subscribedDate: '2026-02-15',
+    lastDigestSentDate: '2026-04-04',
+    status: 'active'
+  },
+  {
+    id: 'sub_2',
+    email: 'nour.engineer2026@outlook.com',
+    maskedEmail: 'n***r@o***k.com',
+    name: 'نور الدين منصور',
+    phone: '+963988445566',
+    subscribedDate: '2026-03-01',
+    lastDigestSentDate: '2026-04-04',
+    status: 'active'
+  },
+  {
+    id: 'sub_3',
+    email: 'gaming.damascus@yahoo.com',
+    maskedEmail: 'g***s@y***o.com',
+    name: 'سامر حموي',
+    phone: '+963966554433',
+    subscribedDate: '2026-03-20',
+    lastDigestSentDate: '2026-04-04',
+    status: 'active'
+  }
+];
+
+export const initialPaymentMethods: PaymentMethod[] = [
+  {
+    id: 'pay_1',
+    title: 'الدفع نقداً عند الاستلام (COD) بعد المعاينة والفحص',
+    shortDesc: 'استلم حاسوبك، افحص مكوناته وكفالته بنفسك، ثم ادفع القيمة للمتجر',
+    iconType: 'cash',
+    details: [
+      'الخيار الأكثر أماناً وطمأنينة لجميع العملاء داخل المدن المغطاة.',
+      'يحق للمشتري فتح الكرتون والتأكد من تطابق الرقم التسلسلي والمواصفات قبل تسليم المبلغ.',
+      'الدفع بالدولار الأمريكي ($) النظيف أو بما يعادله بالعملة المحلية بسعر صرف الصرافة المعتمد في يوم التسليم.'
+    ],
+    active: true
+  },
+  {
+    id: 'pay_2',
+    title: 'التحويل المصرفي المباشر والحسابات البنكية الرسمية',
+    shortDesc: 'حوالات بنكية معتمدة عبر البنوك السورية والعربية المعتمدة',
+    iconType: 'bank',
+    details: [
+      'تحويل فوري عبر بنك بيمو السعودي الفرنسي، بنك البركة، أو بنك قطر الوطني.',
+      'يتم إرسال إشعار التحويل البنكي الرسمي إلى المتجر لتثبيت حجز القطعة فوراً.',
+      'توفير فاتورة ضريبية رسمية للشركات والمهندسين وأصحاب الفعاليات التجارية.'
+    ],
+    active: true
+  },
+  {
+    id: 'pay_3',
+    title: 'العملات الرقمية المشفرة (USDT - TRC20 / BEP20)',
+    shortDesc: 'دفع رقمي سريع وفوري من أي مكان في العالم بعمولة تحويل شبه معدومة',
+    iconType: 'crypto',
+    details: [
+      'قبول تحويلات العملة الرقمية المستقرة USDT الدولار الرقمي عبر شبكة Tron أو BSC.',
+      'مناسب جداً للعملاء المغتربين الذين يشترون حواسيب لأقاربهم أو العاملين عن بعد Freelancers.',
+      'تأكيد الدفع يتم خلال دقيقتين فقط عبر كود المحفظة المعتمد.'
+    ],
+    active: true
+  },
+  {
+    id: 'pay_4',
+    title: 'المحافظ الإلكترونية المحلية والدفع السريع',
+    shortDesc: 'سيريتل كاش، إم تي إن كاش، شام كاش، والهرم للحوالات',
+    iconType: 'wallet',
+    details: [
+      'دفع سلس عبر المحافظ الخلوية مع تسوية فورية.',
+      'إمكانية إرسال حوالة باسم المتجر الشريك عبر شبكات الحوالات المعتمدة (الهرم / الفؤاد).',
+      'توفير خيارات تقسيط لبعض المتاجر بموجب كفالات مصرفية معتمدة.'
+    ],
+    active: true
+  }
+];
+
+export const initialCustomBuilderElements: CustomBuilderElement[] = [
+  {
+    id: 'elem_1',
+    title: 'طلب مواصفات خاصة وتجميع مخصص',
+    description: 'إذا لم تجد مواصفات اللابتوب أو التجميعة التي تبحث عنها، اضغط هنا لطلب بحث مجاني وسريع من فريقنا عبر كافة المتاجر الشريكة.',
+    iconName: 'Cpu',
+    actionType: 'external_url',
+    actionTarget: 'https://wa.me/963988112233?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%20TechsyZone%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%B7%D9%84%D8%A8%20%D9%85%D9%88%D8%A7%D8%B5%D9%81%D8%A7%D8%AA%20%D8%AE%D8%A7%D8%B5%D8%A9%20%D9%84%D8%AD%D8%A7%D8%B3%D9%88%D8%A8',
+    buttonText: 'طلب جهاز بمواصفات مخصصة',
+    location: 'features_grid',
+    enabled: true
+  },
+  {
+    id: 'elem_2',
+    title: 'خدمة فحص وتأكيد الكفالة قبل الشراء',
+    description: 'نقوم بالتحقق من سيريال الجهاز وفترة الضمان الرسمي لدى الوكيل نيابة عنك لحماية مشترياتك بنسبة 100%.',
+    iconName: 'ShieldCheck',
+    actionType: 'scroll_to',
+    actionTarget: 'catalog-section',
+    buttonText: 'تصفح الأجهزة المضمونة',
+    location: 'features_grid',
+    enabled: true
+  }
+];
