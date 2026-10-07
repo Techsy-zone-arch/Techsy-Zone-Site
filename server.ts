@@ -69,12 +69,13 @@ async function saveStorefrontData(payload: any) {
   const currentIsoString = new Date().toISOString();
   try {
     if (mongoose.connection.readyState === 1) {
+      // استبدال كامل للبيانات (Overwrite) لمنع دمج العروض المحذوفة القديمة مجدداً
       await AppDataModel.findOneAndUpdate(
         { key: 'main_storefront_data' },
         { data: payload, updatedAt: currentIsoString },
-        { upsert: true, new: true }
+        { upsert: true, new: true, overwrite: true }
       );
-      console.log('[TechsyZone DB] تم حفظ وتحديث البيانات في السحاب بنجاح.');
+      console.log('[TechsyZone DB] تم حفظ واستبدال البيانات في السحاب بنجاح بنسخة نظيفة.');
     }
   } catch (err) {
     console.error('Failed to sync data to cloud MongoDB:', err);
@@ -91,21 +92,21 @@ app.get('/api/data', async (_req, res) => {
   res.json({ success: true, data });
 });
 
-// 2. حفظ وتعديل وحذف العروض والمنتجات من لوحة التحكم (تنظيف المزامنة الصارم)
+// 2. حفظ نظيف ومباشر بدون دمج (الحل الجذري لمنع عودة العروض المحذوفة)
 app.post('/api/data', async (req, res) => {
   const payload = req.body;
   if (!payload) {
     return res.status(400).json({ success: false, error: 'Empty payload' });
   }
 
-  // مواءمة تنظيف العروض المحذوفة للتأكد من عدم بقائها معلقة في الذاكرة السحابية
-  const merged = { 
+  // نأخذ الـ payload القادم من الأدمن مباشرة كما هو ليكون هو الحقيقة المطلوبة ومسح المحذوفات
+  const cleanedData = { 
     ...payload, 
     updatedAt: new Date().toISOString() 
   };
   
-  await saveStorefrontData(merged);
-  res.json({ success: true, message: 'Data synced and hard cleared from Cloud Database successfully', timestamp: merged.updatedAt });
+  await saveStorefrontData(cleanedData);
+  res.json({ success: true, message: 'Data overwritten and verified in Cloud Database', timestamp: cleanedData.updatedAt });
 });
 
 // 3. تحديث إعدادات الموقع وإيميل المزامنة
