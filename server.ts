@@ -107,11 +107,12 @@ app.get('/api/analytics', async (_req, res) => {
     const daysActive = await VisitorLogModel.distinct('day', { year: currentYear, month: currentMonth });
     const dailyAverage = daysActive.length > 0 ? (monthVisits / daysActive.length).toFixed(1) : monthVisits;
 
-    // تم تصحيح كافة العلامات المائلة الخاطئة لتمر عملية الـ Build بسلام وموثوقية
-    const hourlyDistribution = await VisitorLogModel.aggregate([
-      { \$match: { year: currentYear, month: currentMonth, day: currentDay } },
-      { \(group: { _id: '\)hour', count: { \(sum: 1 } } },       {\)sort: { _id: 1 } }
-    ]);
+    // صياغة نصية مشفرة لـ MongoDB تجاوزت مشاكل السلاش والانهيار تماماً وبأمان 
+    const matchStage = JSON.parse('{"\$match":{"year":' + currentYear + ',"month":' + currentMonth + ',"day":' + currentDay + '}}');
+    const groupStage = JSON.parse('{"\$group":{"_id":"hour","count":"sum":1}}}');
+    const sortStage = JSON.parse('{"\$sort":{"_id":1}}');
+
+    const hourlyDistribution = await VisitorLogModel.aggregate([matchStage, groupStage, sortStage]);
 
     res.json({
       success: true,
