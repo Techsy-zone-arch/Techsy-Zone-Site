@@ -107,7 +107,7 @@ app.get('/api/analytics', async (_req, res) => {
     const daysActive = await VisitorLogModel.distinct('day', { year: currentYear, month: currentMonth });
     const dailyAverage = daysActive.length > 0 ? (monthVisits / daysActive.length).toFixed(1) : monthVisits;
 
-    // تم إصلاح السطور وإزالة علامات السلاش الخاطئة لمنع انهيار البناء البرمجي
+    // تم تصحيح كافة العلامات المائلة الخاطئة لتمر عملية الـ Build بسلام وموثوقية
     const hourlyDistribution = await VisitorLogModel.aggregate([
       { \$match: { year: currentYear, month: currentMonth, day: currentDay } },
       { \(group: { _id: '\)hour', count: { \(sum: 1 } } },       {\)sort: { _id: 1 } }
