@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Sliders, Palette, Share2, Package, Store, DollarSign, Users, Plus, Lock, Eye, Trash2, Edit3, Clock, TrendingUp, ShieldCheck, RefreshCw, MessageCircle, ImageIcon } from 'lucide-react';
+import { Product, PartnerStore, OrderItem, SiteConfig } from '../types';
+import { Sliders, Palette, Share2, Package, Store, DollarSign, Users, Plus, Lock, Eye, Trash2, Edit3, Clock, TrendingUp, ShieldCheck, RefreshCw } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
   const { siteConfig, updateSiteConfig, products, addProduct, deleteProduct, stores, addStore, deleteStore, orders, confirmOrderAsAdmin, subscribers, sendSaturdayNewsletter, customElements, addCustomElement, deleteCustomElement, isLiveEditorActive, setIsLiveEditorActive, setIsAdminRoute, isAdminLoggedIn, adminLogin, changeAdminPassword, adminLogout } = useApp();
   const [pin, setPin] = useState(''); const [pass, setPass] = useState(''); const [tab, setTab] = useState('branding');
-  const [form, setForm] = useState(siteConfig); const [pModal, setPModal] = useState(false); const [sModal, setSModal] = useState(false);
+  const [form, setForm] = useState<SiteConfig>(siteConfig); const [pModal, setPModal] = useState(false); const [sModal, setSModal] = useState(false);
   const [elTitle, setElTitle] = useState(''); const [elBtn, setElButton] = useState(''); const [elTar, setElTarget] = useState('');
   const [stF, setStForm] = useState<any>({}); const [pdF, setPdForm] = useState<any>({}); const [analytics, setAnalytics] = useState<any>(null);
 
@@ -18,8 +19,6 @@ export const AdminDashboard: React.FC = () => {
       fetch('/api/analytics', { method: 'DELETE' }).then(res => res.json()).then(d => { alert(d.message); window.location.reload(); });
     }
   };
-
-  // 🛡️ واجهة تسجيل الدخول النظيفة والمصلحة بالكامل للكتابة الفورية من الموبايل
   if (!isAdminLoggedIn) {
     return (
       <div className="min-h-[75vh] flex flex-col items-center justify-center p-4 bg-slate-950 text-white text-xs" dir="rtl">
@@ -37,10 +36,7 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 text-right text-white text-xs" dir="rtl">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b border-slate-800 pb-4">
-        <div>
-          <div className="text-cyan-400 text-[10px] font-mono font-bold flex items-center gap-1"><Sliders className="w-3.5 h-3.5" /> مزامنة MongoDB Atlas الحية نشطة</div>
-          <h1 className="text-xl font-black">إدارة منصة TechsyZone الفخمة</h1>
-        </div>
+        <div><div className="text-cyan-400 text-[10px] font-mono font-bold flex items-center gap-1"><Sliders className="w-3.5 h-3.5" /> مزامنة MongoDB Atlas الحية نشطة</div><h1 className="text-xl font-black">إدارة منصة TechsyZone الفخمة</h1></div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <button onClick={() => { setIsLiveEditorActive(!isLiveEditorActive); if(!isLiveEditorActive) setIsAdminRoute(false); }} className="px-3 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl cursor-pointer">{isLiveEditorActive ? 'إغلاق التحرير الحي' : '✨ تفعيل التحرير الحي الفخم'}</button>
           <button onClick={() => setIsAdminRoute(false)} className="px-3 py-2 bg-slate-800 rounded-xl flex items-center gap-1 cursor-pointer"><Eye className="w-3.5 h-3.5 text-cyan-400" /> معاينة المتجر</button>
@@ -48,11 +44,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center px-1">
-        <span className="text-slate-400 font-bold">📊 إحصائيات رصد زوار المنصة الفعليين (مفلترة تلقائياً):</span>
-        <button onClick={handleReset} className="px-2.5 py-1 bg-rose-950/50 text-rose-400 border border-rose-800 font-black rounded-lg flex items-center gap-1 cursor-pointer shadow"><RefreshCw className="w-3 h-3" /> تصفير عداد الزوار السحابي 🗑️</button>
-      </div>
-
+      <div className="flex justify-between items-center px-1"><span className="text-slate-400 font-bold">📊 إحصائيات رصد زوار المنصة الفعليين:</span><button onClick={handleReset} className="px-2.5 py-1 bg-rose-950/50 text-rose-400 border border-rose-800 font-black rounded-lg flex items-center gap-1 cursor-pointer"><RefreshCw className="w-3 h-3" /> تصفير عداد الزوار السحابي 🗑️</button></div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center gap-3"><Users className="text-cyan-400" /><div><span className="text-[10px] text-slate-400 block">الزيارات الحقيقية</span><span className="font-black text-white">{analytics?.total || 0}</span></div></div>
         <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center gap-3"><Eye className="text-green-400" /><div><span className="text-[10px] text-slate-400 block">زيارات اليوم</span><span className="font-black text-white">{analytics?.today || 0}</span></div></div>
@@ -61,15 +53,15 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       <div className="flex gap-1.5 overflow-x-auto pb-1 font-bold no-scrollbar">
-        {[ {id:'branding', l:'🎨 المظهر'}, {id:'contacts', l:'📞 الروابط والشبكات'}, {id:'products', l:'📦 الأجهزة'}, {id:'stores', l:'🏪 المتاجر الشريكة'}, {id:'orders', l:'💰 فواتير العمولات'}, {id:'subscribers', l:'👥 النشرة'}, {id:'builder', l:'🛠️ باني البوابات'}, {id:'security', l:'🔒 الأمان'} ].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} className={`px-3 py-2 rounded-xl border whitespace-nowrap cursor-pointer ${tab === t.id ? 'bg-cyan-50 text-slate-950 border-cyan-400':'bg-slate-900 text-slate-300 border-slate-800'}`}>{t.l}</button>
+        {[ {id:'branding', l:'🎨 المظهر'}, {id:'contacts', l:'📞 الروابط والشبكات'}, {id:'products', l:'📦 الأجهزة'}, {id:'stores', l:'🏪 المتاجر'}, {id:'orders', l:'💰 فواتير العمولات'}, {id:'subscribers', l:'👥 النشرة'}, {id:'builder', l:'🛠️ باني Bوابات'}, {id:'security', l:'🔒 الأمان'} ].map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} className={`px-3 py-2 rounded-xl border whitespace-nowrap cursor-pointer ${tab === t.id ? 'bg-cyan-500 text-slate-950 border-cyan-400':'bg-slate-900 text-slate-300 border-slate-800'}`}>{t.l}</button>
         ))}
       </div>
       {tab === 'branding' && (
         <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-3">
-          <div><label className="text-slate-400 block mb-1">اسم المنصة الكبرى:</label><input type="text" value={form.brandName || "فارغ"} onChange={e => setForm({...form, brandName:e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-cyan-500" /></div>
-          <div><label className="text-slate-400 block mb-1">شريط الإعلان وضمان الأسعار العلوية للزبائن:</label><textarea rows={2} value={form.announcementText || "لا يوجد إعلان حالي"} onChange={e => setForm({...form, announcementText:e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-cyan-500" /></div>
-          <button onClick={() => updateSiteConfig(form)} className="px-4 py-2 bg-cyan-500 text-slate-950 font-bold rounded-xl cursor-pointer hover:bg-cyan-400">حفظ التغييرات</button>
+          <div><label className="text-slate-400 block mb-1">اسم المنصة الكبرى:</label><input type="text" value={form.brandName || "فارغ"} onChange={e => setForm({...form, brandName:e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white" /></div>
+          <div><label className="text-slate-400 block mb-1">شريط الإعلان وضمان الأسعار العلوية للزبائن:</label><textarea rows={2} value={form.announcementText || "لا يوجد إعلان حالي"} onChange={e => setForm({...form, announcementText:e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white" /></div>
+          <button onClick={() => updateSiteConfig(form)} className="px-4 py-2 bg-cyan-500 text-slate-950 font-bold rounded-xl cursor-pointer">حفظ التغييرات</button>
         </div>
       )}
 
@@ -77,26 +69,26 @@ export const AdminDashboard: React.FC = () => {
         <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
           <h3 className="font-bold text-cyan-400">🔗 إعدادات الروابط وشبكات تواصل الموقع</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label className="text-slate-400 block mb-1">رقم الواتساب المعتمد للطلب:</label><input type="text" value={form.whatsAppNumber || "فارغ"} onChange={e => setForm({...form, whatsAppNumber:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white font-mono border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
-            <div><label className="text-slate-400 block mb-1">رابط مسنجر الفيسبوك (m.me):</label><input type="text" value={form.messengerUrl || "فارغ"} onChange={e => setForm({...form, messengerUrl:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white font-mono border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
-            <div><label className="text-slate-400 block mb-1">رابط صفحة الفيسبوك العامة:</label><input type="text" value={form.facebookPageUrl || "لا يوجد"} onChange={e => setForm({...form, facebookPageUrl:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
-            <div><label className="text-slate-400 block mb-1">رابط حساب الإنستغرام:</label><input type="text" value={form.instagramPageUrl || "لا يوجد"} onChange={e => setForm({...form, instagramPageUrl:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
-            <div className="sm:col-span-2"><label className="text-slate-400 block mb-1">البريد الإلكتروني لإشعارات الفريق والفواتير:</label><input type="email" value={form.adminNotificationEmail || "فارغ"} onChange={e => setForm({...form, adminNotificationEmail:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white font-mono border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
+            <div><label className="text-slate-400 block mb-1">رقم الواتساب المعتمد للطلب:</label><input type="text" value={form.whatsAppNumber || "فارغ"} onChange={e => setForm({...form, whatsAppNumber:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white font-mono border border-slate-800" /></div>
+            <div><label className="text-slate-400 block mb-1">رابط مسنجر الفيسبوك (m.me):</label><input type="text" value={form.messengerUrl || "فارغ"} onChange={e => setForm({...form, messengerUrl:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white font-mono border border-slate-800" /></div>
+            <div><label className="text-slate-400 block mb-1">رابط صفحة الفيسبوك العامة:</label><input type="text" value={form.facebookPageUrl || "لا يوجد"} onChange={e => setForm({...form, facebookPageUrl:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white border border-slate-800" /></div>
+            <div><label className="text-slate-400 block mb-1">رابط حساب الإنستغرام:</label><input type="text" value={form.instagramPageUrl || "لا يوجد"} onChange={e => setForm({...form, instagramPageUrl:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white border border-slate-800" /></div>
+            <div className="sm:col-span-2"><label className="text-slate-400 block mb-1">البريد الإلكتروني للإشعارات (الإيميل):</label><input type="email" value={form.adminNotificationEmail || "فارغ"} onChange={e => setForm({...form, adminNotificationEmail:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white font-mono border border-slate-800" /></div>
           </div>
-          <button onClick={() => updateSiteConfig(form)} className="px-4 py-2 bg-cyan-500 text-slate-950 font-bold rounded-xl cursor-pointer hover:bg-cyan-400">حفظ وتطبيق قنوات التواصل</button>
+          <button onClick={() => updateSiteConfig(form)} className="px-4 py-2 bg-cyan-500 text-slate-950 font-bold rounded-xl cursor-pointer">حفظ وتطبيق قنوات التواصل</button>
         </div>
       )}
       {tab === 'products' && (
         <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
           <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-            <div><h3 className="font-bold text-white">📦 كتالوج الأجهزة السحابي الموحد</h3><p className="text-[11px] text-slate-400">حذف فوري صارم (Overwrite) يمنع بقاء المنتجات المعلقة</p></div>
-            <button onClick={() => setPModal(true)} className="px-3 py-1.5 bg-cyan-500 text-slate-950 font-bold rounded-xl flex items-center gap-1 cursor-pointer hover:bg-cyan-400"><Plus className="w-3.5 h-3.5" /> إضافة جهاز تفصيلي</button>
+            <div><h3 className="font-bold text-white">📦 كتالوج الأجهزة السحابي الموحد</h3></div>
+            <button onClick={() => setPModal(true)} className="px-3 py-1.5 bg-cyan-500 text-slate-950 font-bold rounded-xl flex items-center gap-1 cursor-pointer"><Plus className="w-3.5 h-3.5" /> إضافة جهاز تفصيلي</button>
           </div>
           <div className="space-y-2">
-            {products.length === 0 ? <p className="text-slate-500 text-center py-2 font-medium">لا يوجد منتجات حالياً في قاعدة البيانات (فارغ)</p> : products.map(p => (
-              <div key={p.id} className="p-2.5 bg-slate-950/60 rounded-xl border border-slate-800 flex justify-between items-center shadow-inner">
+            {products.length === 0 ? <p className="text-slate-500 text-center py-2">لا يوجد منتجات حالياً (فارغ)</p> : products.map(p => (
+              <div key={p.id} className="p-2.5 bg-slate-950/60 rounded-xl border border-slate-800 flex justify-between items-center">
                 <span className="font-bold text-slate-200">{p.name} <span className="text-cyan-400 font-mono">\${p.price}</span></span>
-                <button onClick={() => deleteProduct(p.id)} className="p-1.5 bg-rose-950/40 text-rose-400 rounded-lg cursor-pointer hover:bg-rose-900/40"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => deleteProduct(p.id)} className="p-1.5 bg-rose-950/40 text-rose-400 rounded-lg cursor-pointer"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
           </div>
@@ -106,14 +98,14 @@ export const AdminDashboard: React.FC = () => {
       {tab === 'stores' && (
         <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
           <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-            <div><h3 className="font-bold text-white">🏪 شبكة المتاجر الشريكة المعتمدة</h3><p className="text-[11px] text-slate-400">إضافة وحذف مكاتب ومراكز الهاردوير المرتبطة بنظام الوساطة</p></div>
-            <button onClick={() => setSModal(true)} className="px-3 py-1.5 bg-cyan-500 text-slate-950 font-bold rounded-xl flex items-center gap-1 cursor-pointer hover:bg-cyan-400"><Plus className="w-3.5 h-3.5" /> إضافة متجر</button>
+            <div><h3 className="font-bold text-white">🏪 شبكة المتاجر الشريكة المعتمدة</h3></div>
+            <button onClick={() => setSModal(true)} className="px-3 py-1.5 bg-cyan-500 text-slate-950 font-bold rounded-xl flex items-center gap-1 cursor-pointer"><Plus className="w-3.5 h-3.5" /> إضافة متجر</button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {stores.length === 0 ? <p className="text-slate-500 text-center py-4 sm:col-span-2 font-medium">لا يوجد متاجر شريكة حالياً (السجل فارغ)</p> : stores.map(s => (
-              <div key={s.id} className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex justify-between items-start shadow-inner">
+            {stores.length === 0 ? <p className="text-slate-500 text-center py-4 sm:col-span-2">لا يوجد متاجر شريكة حالياً (السجل فارغ)</p> : stores.map(s => (
+              <div key={s.id} className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex justify-between items-start">
                 <div><span className="font-bold text-slate-200 block">{s.name} <span className="text-[10px] bg-cyan-950 text-cyan-400 px-1.5 py-0.5 rounded font-mono">{s.city}</span></span></div>
-                <button onClick={() => deleteStore(s.id)} className="p-1.5 bg-rose-950/40 text-rose-400 rounded-lg cursor-pointer hover:bg-rose-900/40"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => deleteStore(s.id)} className="p-1.5 bg-rose-950/40 text-rose-400 rounded-lg cursor-pointer"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
           </div>
@@ -127,17 +119,18 @@ export const AdminDashboard: React.FC = () => {
             {orders.length === 0 ? (
               <p className="text-slate-500 text-center py-4 font-medium">لا يوجد فواتير شراء أو عمولات معلقة حالياً (السجل فارغ)</p>
             ) : orders.map(o => (
-              <div key={o.id} className="p-2.5 bg-slate-950/20 rounded-xl flex justify-between items-center border border-slate-800 shadow-inner">
+              <div key={o.id} className="p-2.5 bg-slate-950/20 rounded-xl flex justify-between items-center border border-slate-800">
                 <div className="flex flex-col">
                   <span className="text-slate-200">طلب <span className="text-cyan-400 font-mono font-bold">{o.id}</span> للعميل {o.customerName}</span>
-                  <span className="text-[10px] text-slate-400">العمولة المستحقة: <span className="text-emerald-400 font-mono font-bold">\${o.commissionAmount}</span></span>
+                  <span className="text-[10px] text-slate-400">العمولة: <span className="text-emerald-400 font-mono font-bold">\${o.commissionAmount}</span></span>
                 </div>
-                <button onClick={() => confirmOrderAsAdmin(o.id)} className="px-2.5 py-1 bg-cyan-600 text-slate-950 font-black rounded-lg shadow hover:bg-cyan-500 cursor-pointer">توثيق الفاتورة وتحصيلها</button>
+                <button onClick={() => confirmOrderAsAdmin(o.id)} className="px-2.5 py-1 bg-cyan-600 text-slate-950 font-black rounded-lg shadow cursor-pointer">توثيق الفاتورة وتحصيلها</button>
               </div>
             ))}
           </div>
         </div>
       )}
+
       {tab === 'subscribers' && (
         <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-3">
           <h3 className="font-bold text-cyan-400">👥 بث نشرة أسعار السبت تلقائياً للمشتركين</h3>
@@ -145,7 +138,6 @@ export const AdminDashboard: React.FC = () => {
           <button onClick={() => sendSaturdayNewsletter(form.saturdayDigestSubject, form.saturdayDigestBody)} className="w-full py-2 bg-emerald-600 font-bold rounded-xl text-white cursor-pointer">🚀 إرسال نشرة السبت الآن للمشتركين ({subscribers.length})</button>
         </div>
       )}
-
       {tab === 'builder' && (
         <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
           <div><h3 className="font-bold text-white">🛠️ باني الأقسام والبوابات التفاعلية الفخمة (التحرير الحي)</h3></div>
@@ -170,6 +162,7 @@ export const AdminDashboard: React.FC = () => {
           <button type="submit" className="px-4 py-2 bg-cyan-500 text-slate-950 font-black rounded-xl cursor-pointer">تأمين وحفظ الرمز الجديد سحابياً</button>
         </form>
       )}
+
       {pModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md overflow-y-auto">
           <div className="w-full max-w-xl bg-slate-900 border border-cyan-500/40 rounded-3xl p-5 space-y-3 max-h-[90vh] overflow-y-auto no-scrollbar text-right text-white">
@@ -208,7 +201,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
               <button onClick={() => setPModal(false)} className="px-4 py-2 bg-slate-800 rounded-xl text-slate-300 font-bold cursor-pointer">إلغاء</button>
-              <button onClick={() => { if(pdF.name) { addProduct({ name: pdF.name, category: 'laptops_gaming', price: pdF.price || 1500, originalStorePrice: pdF.price || 1500, storeId: pdF.storeId || 'store_1', storeName: pdF.storeName || 'سيريا تك سنتر', storeLocation: pdF.city || 'دمشق', inStock: (pdF.stock || 1) > 0, image: pdF.img || '/src/assets/images/laptop_flagship_pro_1791263342097.jpg', commissionAmount: 70, badge: pdF.cond === 'new' ? 'جديد بالكرتون' : pdF.cond === 'open_box' ? 'Open Box' : 'مستعمل نظيف', description: pdF.notes || '', specs: { processor: pdF.cpu || '', gpu: pdF.gpu || '', ram: pdF.ram || '', storage: pdF.ssd || '', display: pdF.city || 'سلس وممتاز', condition: pdF.cond || 'جديد', warranty: 'متوفرة حسب المتجر' } }); setPModal(false); } }} className="px-5 py-2 bg-cyan-500 text-slate-950 font-black rounded-xl cursor-pointer shadow-lg">🚀 نشر وتثبيت الجهاز فوراً</button>
+              <button onClick={() => { if(pdF.name) { addProduct({ name: pdF.name, category: 'laptops_gaming', price: pdF.price || 1500, originalStorePrice: pdF.price || 1500, storeId: pdF.storeId || 'store_1', storeName: pdF.storeName || 'سيريا تك سنتر', storeLocation: pdF.city || 'دمشق', inStock: (pdF.stock || 1) > 0, image: pdF.img || '/src/assets/images/laptop_flagship_pro_1791263342097.jpg', commissionAmount: 70, badge: pdF.cond === 'new' ? 'جديد بالكرتون' : pdF.cond === 'open_box' ? 'Open Box' : 'مستعمل نظيف', description: pdF.notes || '', specs: { processor: pdF.cpu || '', gpu: pdF.gpu || '', ram: pdF.ram || '', storage: pdF.ssd || '', display: pdF.city || 'سلس وممتاز', condition: pdF.cond || 'جديد', warranty: 'متوفرة حسب المتجر' } }); setPModal(false); } }} className="px-5 py-2 bg-cyan-500 text-slate-950 font-black rounded-xl cursor-pointer shadow-lg hover:bg-cyan-400">🚀 نشر وتثبيت الجهاز فوراً</button>
             </div>
           </div>
         </div>
