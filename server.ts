@@ -47,8 +47,20 @@ const VisitorLogSchema = new mongoose.Schema({
 });
 const VisitorLogModel = mongoose.model('VisitorLog', VisitorLogSchema);
 
+// 🛡️ الميدل وير الذكي: استبعاد الآدمن، وخدمات الكرون (Cron-Jobs / Uptime Robots) من الإحصائيات
 app.use(async (req, res, next) => {
-  if (req.method === 'GET' && (req.url === '/' || req.url.startsWith('/api/data'))) {
+  const userAgent = req.headers['user-agent'] || '';
+  const isGet = req.method === 'GET';
+  const isDataApi = req.url.startsWith('/api/data');
+  const isHome = req.url === '/';
+
+  // التحقق إن كان الرابط يخص لوحة الإدارة أو البوت التلقائي لتحديث الخادم
+  const isLogRobot = userAgent.toLowerCase().includes('robot') || 
+                      userAgent.toLowerCase().includes('cron') || 
+                      userAgent.toLowerCase().includes('ping') ||
+                      req.headers['x-admin-request'] === 'true';
+
+  if (isGet && (isHome || isDataApi) && !isLogRobot) {
     try {
       const now = new Date();
       await VisitorLogModel.create({
@@ -107,9 +119,8 @@ app.get('/api/analytics', async (_req, res) => {
     const daysActive = await VisitorLogModel.distinct('day', { year: currentYear, month: currentMonth });
     const dailyAverage = daysActive.length > 0 ? (monthVisits / daysActive.length).toFixed(1) : monthVisits;
 
-    // صياغة نصية مشفرة لـ MongoDB تجاوزت مشاكل السلاش والانهيار تماماً وبأمان 
     const matchStage = JSON.parse('{"\$match":{"year":' + currentYear + ',"month":' + currentMonth + ',"day":' + currentDay + '}}');
-    const groupStage = JSON.parse('{"\$group":{"_id":"hour","count":"sum":1}}}');
+    const groupStage = JSON.parse('{"\$group":{"_id":"\$hour","count":{"\$sum":1}}}');
     const sortStage = JSON.parse('{"\$sort":{"_id":1}}');
 
     const hourlyDistribution = await VisitorLogModel.aggregate([matchStage, groupStage, sortStage]);
@@ -131,54 +142,16 @@ app.get('/api/analytics', async (_req, res) => {
   }
 });
 
-app.post('/api/config', async (req, res) => {
-  const { config } = req.body;
-  const record = await StoreDataModel.findOne({ key: 'main_storefront_data' });
-  const db = record ? record.data : {};
-  db.siteConfig = { ...(db.siteConfig || {}), ...config };
-  
-  await StoreDataModel.findOneAndUpdate(
-    { key: 'main_storefront_data' },
-    { data: db, updatedAt: new Date().toISOString() },
-    { upsert: true, overwrite: true }
-  );
-  res.json({ success: true, siteConfig: db.siteConfig });
-});
-
-app.post('/api/backup-drive', async (req, res) => {
-  const { backupEmail } = req.body;
-  const record = await StoreDataModel.findOne({ key: 'main_storefront_data' });
-  const db = record ? record.data : {};
-  const backupSnapshot = {
-    exportedAt: new Date().toISOString(),
-    backupEmail: backupEmail || db.siteConfig?.backupDriveEmail || 'backup@techsyzone.com',
-    data: db,
-    status: 'synced_to_cloud_reserve'
-  };
-  const DATA_DIR = path.resolve(__dirname, 'data');
-  const BACKUP_DIR = path.resolve(DATA_DIR, 'backups');
-  if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
-  fs.writeFileSync(path.resolve(BACKUP_DIR, `backup_${Date.now()}.json`), JSON.stringify(backupSnapshot, null, 2));
-  res.json({ success: true, message: 'تم عمل نسخة احتياطية' });
-});
-
 async function startServer() {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction) {
     const vite = await createViteServer({ server: { middlewareMode: true }, appType: 'spa' });
     app.use(vite.middlewares);
-    app.use('*', async (req, res, next) => {
-      try {
-        const template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
-        const transformed = await vite.transformIndexHtml(req.originalUrl, template);
-        res.status(200).set({ 'Content-Type': 'text/html' }).end(transformed);
-      } catch (e) { vite.ssrFixStacktrace(e as Error); next(e); }
-    });
   } else {
     const distPath = path.resolve(__dirname, 'dist');
     app.use(express.static(distPath));
     app.get('*', (_req, res) => res.sendFile(path.resolve(distPath, 'index.html')));
   }
-  app.listen(PORT, '0.0.0.0', () => console.log(`[TechsyZone] Running on http://0.0.0:${PORT}`));
+  app.listen(PORT, '0.0.0.0', () => console.log(`[TechsyZone] active on port ${PORT}`));
 }
 startServer();
