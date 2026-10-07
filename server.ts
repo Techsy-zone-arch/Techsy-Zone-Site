@@ -18,7 +18,7 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 app.use(express.json({ limit: '10mb' }));
 
 // -------------------------------------------------------------
-// اتصال قاعدة البيانات السحابية (MongoDB Atlas) لتدوم الداتا للأبد
+// اتصال قاعدة البيانات السحابية الصارم (MongoDB Atlas) 
 // -------------------------------------------------------------
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
@@ -27,10 +27,10 @@ if (MONGODB_URI) {
     .then(() => console.log('[TechsyZone DB] قاعدة البيانات السحابية متصلة بنجاح والداتا تدوم للأبد!'))
     .catch(err => console.error('[TechsyZone DB] خطأ في الاتصال بـ MongoDB:', err));
 } else {
-  console.warn('[TechsyZone DB] تنبيه: لم يتم العثور على متغير البيئة MONGODB_URI. تم التحويل الاحتياطي للملف المحلي.');
+  console.error('[TechsyZone DB] خطأ فادح: لم يتم العثور على متغير البيئة MONGODB_URI في إعدادات Render.');
 }
 
-// تعريف وثيقة الحفظ في MongoDB لحفظ كامل بيانات التطبيق المتداخلة هيراركياً
+// تعريف وثيقة الحفظ في MongoDB لحفظ كامل بيانات التطبيق
 const AppDataSchema = new mongoose.Schema({
   key: { type: String, default: 'main_storefront_data', unique: true },
   data: mongoose.Schema.Types.Mixed,
@@ -40,16 +40,10 @@ const AppDataSchema = new mongoose.Schema({
 const AppDataModel = mongoose.model('StoreData', AppDataSchema);
 
 // -------------------------------------------------------------
-// المزامنة الهجينة (تأمين قراءة وكتابة الداتا من السحاب أو كملف احتياطي)
+// المزامنة الحية عبر السحاب فقط (تم حذف قراءة ومزامنة ملف db.json القديم)
 // -------------------------------------------------------------
-const DATA_DIR = path.resolve(__dirname, 'data');
-const DB_FILE = path.resolve(DATA_DIR, 'db.json');
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-
-// دالة جلب البيانات الذكية (تحاول القراءة من السحاب أولاً، وإن لم تجد تقرأ محلياً)
+// دالة جلب البيانات الذكية من السحاب مباشرة للزبائن والأدمن
 async function getStorefrontData() {
   try {
     if (mongoose.connection.readyState === 1) {
@@ -59,26 +53,15 @@ async function getStorefrontData() {
       }
     }
   } catch (err) {
-    console.error('Error fetching from MongoDB, falling back to local file:', err);
+    console.error('Error fetching data from MongoDB Cloud:', err);
   }
-
-  //Fallback في حال عدم الاتصال المؤقت بالسحاب
-  try {
-    if (fs.existsSync(DB_FILE)) {
-      const content = fs.readFileSync(DB_FILE, 'utf-8');
-      return JSON.parse(content);
-    }
-  } catch (err) {
-    console.error('Error reading fallback db.json:', err);
-  }
-  return null;
+  // في حال عدم وجود داتا سابقة في السحاب، يعود بقيمة فارغة لتبدأ لوحة التحكم بشكل نظيف
+  return null; 
 }
 
-// دالة حفظ البيانات المزدوجة (تحفظ في السحاب للأبد وتحدث الملف المحلي أيضاً كأمان)
+// دالة حفظ البيانات وتحديثها في السحاب للأبد
 async function saveStorefrontData(payload: any) {
   const currentIsoString = new Date().toISOString();
-  
-  // 1. الحفظ في السحاب للأبد
   try {
     if (mongoose.connection.readyState === 1) {
       await AppDataModel.findOneAndUpdate(
@@ -86,21 +69,15 @@ async function saveStorefrontData(payload: any) {
         { data: payload, updatedAt: currentIsoString },
         { upsert: true, new: true }
       );
+      console.log('[TechsyZone DB] تم حفظ وتحديث البيانات في السحاب بنجاح.');
     }
   } catch (err) {
     console.error('Failed to sync data to cloud MongoDB:', err);
   }
-
-  // 2. الحفظ في الملف المحلي لضمان استقرار التشغيل الداخلي
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(payload, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('Error writing to fallback db.json:', err);
-  }
 }
 
 // -------------------------------------------------------------
-// مسارات روابط الـ REST API المعدلة لتعمل عبر السحاب
+// مسارات روابط الـ REST API المتوافقة بالكامل مع لوحة التحكم
 // -------------------------------------------------------------
 
 // 1. جلب كافة المنتجات والعروض لصفحة الزبائن والأدمن
@@ -133,7 +110,7 @@ app.post('/api/config', async (req, res) => {
   res.json({ success: true, siteConfig: db.siteConfig });
 });
 
-// 4. عمل لقطة حفظ احتياطية كاملة متزامنة مع الخادم الاحتياطي للملفات
+// 4. عمل لقطة حفظ احتياطية (ملف مرجعي في مجلد الباك اب عند الحاجة)
 app.post('/api/backup-drive', async (req, res) => {
   const { backupEmail } = req.body;
   const db = (await getStorefrontData()) || {};
@@ -144,6 +121,7 @@ app.post('/api/backup-drive', async (req, res) => {
     status: 'synced_to_cloud_reserve'
   };
   
+  const DATA_DIR = path.resolve(__dirname, 'data');
   const BACKUP_DIR = path.resolve(DATA_DIR, 'backups');
   if (!fs.existsSync(BACKUP_DIR)) {
     fs.mkdirSync(BACKUP_DIR, { recursive: true });
@@ -194,7 +172,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[TechsyZone Server] Running on http://0.0.0.0:${PORT}`);
+    console.log(`[TechsyZone Server] Running on http://0.0.0:${PORT}`);
   });
 }
 
