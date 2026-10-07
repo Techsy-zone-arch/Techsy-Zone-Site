@@ -17,6 +17,14 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 // Enable JSON parser with large payload for custom logo uploads
 app.use(express.json({ limit: '10mb' }));
 
+// منع تخزين الكاش تماماً لضمان تحديث العروض فوراً عند الزبائن بمجرد حذفها
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+
 // -------------------------------------------------------------
 // اتصال قاعدة البيانات السحابية الصارم (MongoDB Atlas) 
 // -------------------------------------------------------------
@@ -40,10 +48,9 @@ const AppDataSchema = new mongoose.Schema({
 const AppDataModel = mongoose.model('StoreData', AppDataSchema);
 
 // -------------------------------------------------------------
-// المزامنة الحية عبر السحاب فقط (تم حذف قراءة ومزامنة ملف db.json القديم)
+// المزامنة الحية عبر السحاب 
 // -------------------------------------------------------------
 
-// دالة جلب البيانات الذكية من السحاب مباشرة للزبائن والأدمن
 async function getStorefrontData() {
   try {
     if (mongoose.connection.readyState === 1) {
@@ -55,11 +62,9 @@ async function getStorefrontData() {
   } catch (err) {
     console.error('Error fetching data from MongoDB Cloud:', err);
   }
-  // في حال عدم وجود داتا سابقة في السحاب، يعود بقيمة فارغة لتبدأ لوحة التحكم بشكل نظيف
   return null; 
 }
 
-// دالة حفظ البيانات وتحديثها في السحاب للأبد
 async function saveStorefrontData(payload: any) {
   const currentIsoString = new Date().toISOString();
   try {
@@ -80,23 +85,27 @@ async function saveStorefrontData(payload: any) {
 // مسارات روابط الـ REST API المتوافقة بالكامل مع لوحة التحكم
 // -------------------------------------------------------------
 
-// 1. جلب كافة المنتجات والعروض لصفحة الزبائن والأدمن
+// 1. جلب كافة المنتجات والعروض لصفحة الزبائن والأدمن (بدون كاش)
 app.get('/api/data', async (_req, res) => {
   const data = await getStorefrontData();
   res.json({ success: true, data });
 });
 
-// 2. حفظ وتعديل وحذف العروض والمنتجات من لوحة التحكم (مزامنة فورية حية للزبائن)
+// 2. حفظ وتعديل وحذف العروض والمنتجات من لوحة التحكم (تنظيف المزامنة الصارم)
 app.post('/api/data', async (req, res) => {
   const payload = req.body;
   if (!payload) {
     return res.status(400).json({ success: false, error: 'Empty payload' });
   }
-  const existing = (await getStorefrontData()) || {};
-  const merged = { ...existing, ...payload, updatedAt: new Date().toISOString() };
+
+  // مواءمة تنظيف العروض المحذوفة للتأكد من عدم بقائها معلقة في الذاكرة السحابية
+  const merged = { 
+    ...payload, 
+    updatedAt: new Date().toISOString() 
+  };
   
   await saveStorefrontData(merged);
-  res.json({ success: true, message: 'Data synced to Cloud Database successfully', timestamp: merged.updatedAt });
+  res.json({ success: true, message: 'Data synced and hard cleared from Cloud Database successfully', timestamp: merged.updatedAt });
 });
 
 // 3. تحديث إعدادات الموقع وإيميل المزامنة
@@ -110,7 +119,7 @@ app.post('/api/config', async (req, res) => {
   res.json({ success: true, siteConfig: db.siteConfig });
 });
 
-// 4. عمل لقطة حفظ احتياطية (ملف مرجعي في مجلد الباك اب عند الحاجة)
+// 4. عمل لقطة حفظ احتياطية
 app.post('/api/backup-drive', async (req, res) => {
   const { backupEmail } = req.body;
   const db = (await getStorefrontData()) || {};
