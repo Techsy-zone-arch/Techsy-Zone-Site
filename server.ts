@@ -138,10 +138,13 @@ app.get('/api/analytics', async (_req, res) => {
     const dailyAverage = daysActive.length > 0 ? (monthVisits / daysActive.length).toFixed(1) : monthVisits;
 
     // توزيع الزيارات على مدار الـ 24 ساعة الماضية لتغذية الشارتات
+        // توزيع الزيارات على مدار الـ 24 ساعة الماضية لتغذية الشارتات (تم إزالة العلامات المائلة الخاطئة)
     const hourlyDistribution = await VisitorLogModel.aggregate([
-      { \$match: { year: currentYear, month: currentMonth, day: currentDay } },
-      { \(group: { _id: '\)hour', count: { \(sum: 1 } } },       {\)sort: { _id: 1 } }
+      { $match: { year: currentYear, month: currentMonth, day: currentDay } },
+      { $group: { _id: '$hour', count: { $sum: 1 } } },
+      { $sort: { _id: 1 } }
     ]);
+
 
     res.json({
       success: true,
