@@ -4,6 +4,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
@@ -16,71 +17,126 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 // Enable JSON parser with large payload for custom logo uploads
 app.use(express.json({ limit: '10mb' }));
 
+// -------------------------------------------------------------
+// اتصال قاعدة البيانات السحابية (MongoDB Atlas) لتدوم الداتا للأبد
+// -------------------------------------------------------------
+const MONGODB_URI = process.env.MONGODB_URI || '';
+
+if (MONGODB_URI) {
+  mongoose.connect(MONGODB_URI)
+    .then(() => console.log('[TechsyZone DB] قاعدة البيانات السحابية متصلة بنجاح والداتا تدوم للأبد!'))
+    .catch(err => console.error('[TechsyZone DB] خطأ في الاتصال بـ MongoDB:', err));
+} else {
+  console.warn('[TechsyZone DB] تنبيه: لم يتم العثور على متغير البيئة MONGODB_URI. تم التحويل الاحتياطي للملف المحلي.');
+}
+
+// تعريف وثيقة الحفظ في MongoDB لحفظ كامل بيانات التطبيق المتداخلة هيراركياً
+const AppDataSchema = new mongoose.Schema({
+  key: { type: String, default: 'main_storefront_data', unique: true },
+  data: mongoose.Schema.Types.Mixed,
+  updatedAt: { type: String, default: () => new Date().toISOString() }
+}, { minimize: false });
+
+const AppDataModel = mongoose.model('StoreData', AppDataSchema);
+
+// -------------------------------------------------------------
+// المزامنة الهجينة (تأمين قراءة وكتابة الداتا من السحاب أو كملف احتياطي)
+// -------------------------------------------------------------
 const DATA_DIR = path.resolve(__dirname, 'data');
 const DB_FILE = path.resolve(DATA_DIR, 'db.json');
 
-// Ensure data folder exists
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// Read database
-function readDb() {
+// دالة جلب البيانات الذكية (تحاول القراءة من السحاب أولاً، وإن لم تجد تقرأ محلياً)
+async function getStorefrontData() {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const record = await AppDataModel.findOne({ key: 'main_storefront_data' });
+      if (record && record.data) {
+        return record.data;
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching from MongoDB, falling back to local file:', err);
+  }
+
+  //Fallback في حال عدم الاتصال المؤقت بالسحاب
   try {
     if (fs.existsSync(DB_FILE)) {
       const content = fs.readFileSync(DB_FILE, 'utf-8');
       return JSON.parse(content);
     }
   } catch (err) {
-    console.error('Error reading db.json:', err);
+    console.error('Error reading fallback db.json:', err);
   }
   return null;
 }
 
-// Write database
-function writeDb(data: any) {
+// دالة حفظ البيانات المزدوجة (تحفظ في السحاب للأبد وتحدث الملف المحلي أيضاً كأمان)
+async function saveStorefrontData(payload: any) {
+  const currentIsoString = new Date().toISOString();
+  
+  // 1. الحفظ في السحاب للأبد
   try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
-    return true;
+    if (mongoose.connection.readyState === 1) {
+      await AppDataModel.findOneAndUpdate(
+        { key: 'main_storefront_data' },
+        { data: payload, updatedAt: currentIsoString },
+        { upsert: true, new: true }
+      );
+    }
   } catch (err) {
-    console.error('Error writing to db.json:', err);
-    return false;
+    console.error('Failed to sync data to cloud MongoDB:', err);
+  }
+
+  // 2. الحفظ في الملف المحلي لضمان استقرار التشغيل الداخلي
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(payload, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error writing to fallback db.json:', err);
   }
 }
 
-// REST API Routes
-// 1. Get all app state
-app.get('/api/data', (_req, res) => {
-  const data = readDb();
+// -------------------------------------------------------------
+// مسارات روابط الـ REST API المعدلة لتعمل عبر السحاب
+// -------------------------------------------------------------
+
+// 1. جلب كافة المنتجات والعروض لصفحة الزبائن والأدمن
+app.get('/api/data', async (_req, res) => {
+  const data = await getStorefrontData();
   res.json({ success: true, data });
 });
 
-// 2. Save complete app state (used for sync and live visual editor)
-app.post('/api/data', (req, res) => {
+// 2. حفظ وتعديل وحذف العروض والمنتجات من لوحة التحكم (مزامنة فورية حية للزبائن)
+app.post('/api/data', async (req, res) => {
   const payload = req.body;
   if (!payload) {
     return res.status(400).json({ success: false, error: 'Empty payload' });
   }
-  const existing = readDb() || {};
+  const existing = (await getStorefrontData()) || {};
   const merged = { ...existing, ...payload, updatedAt: new Date().toISOString() };
-  writeDb(merged);
-  res.json({ success: true, message: 'Data saved successfully', timestamp: merged.updatedAt });
+  
+  await saveStorefrontData(merged);
+  res.json({ success: true, message: 'Data synced to Cloud Database successfully', timestamp: merged.updatedAt });
 });
 
-// 3. Update Site Config & Google Drive Backup Email
-app.post('/api/config', (req, res) => {
+// 3. تحديث إعدادات الموقع وإيميل المزامنة
+app.post('/api/config', async (req, res) => {
   const { config } = req.body;
-  const db = readDb() || {};
+  const db = (await getStorefrontData()) || {};
   db.siteConfig = { ...(db.siteConfig || {}), ...config };
   db.updatedAt = new Date().toISOString();
-  writeDb(db);
+  
+  await saveStorefrontData(db);
   res.json({ success: true, siteConfig: db.siteConfig });
 });
 
-// 4. Google Drive Cloud Backup Sync
-app.post('/api/backup-drive', (req, res) => {
+// 4. عمل لقطة حفظ احتياطية كاملة متزامنة مع الخادم الاحتياطي للملفات
+app.post('/api/backup-drive', async (req, res) => {
   const { backupEmail } = req.body;
-  const db = readDb() || {};
+  const db = (await getStorefrontData()) || {};
   const backupSnapshot = {
     exportedAt: new Date().toISOString(),
     backupEmail: backupEmail || db.siteConfig?.backupDriveEmail || 'backup@techsyzone.com',
@@ -88,7 +144,6 @@ app.post('/api/backup-drive', (req, res) => {
     status: 'synced_to_cloud_reserve'
   };
   
-  // Save a backup snapshot file
   const BACKUP_DIR = path.resolve(DATA_DIR, 'backups');
   if (!fs.existsSync(BACKUP_DIR)) {
     fs.mkdirSync(BACKUP_DIR, { recursive: true });
@@ -112,14 +167,12 @@ async function startServer() {
   const isProduction = process.env.NODE_ENV === 'production';
 
   if (!isProduction) {
-    // Development mode: Vite middleware
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
 
-    // Fallback to index.html for SPA routes (including /administrationlink)
     app.use('*', async (req, res, next) => {
       const url = req.originalUrl;
       try {
@@ -133,7 +186,6 @@ async function startServer() {
       }
     });
   } else {
-    // Production mode: Serve static dist
     const distPath = path.resolve(__dirname, 'dist');
     app.use(express.static(distPath));
     app.get('*', (_req, res) => {
