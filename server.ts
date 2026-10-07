@@ -47,20 +47,20 @@ const VisitorLogSchema = new mongoose.Schema({
 });
 const VisitorLogModel = mongoose.model('VisitorLog', VisitorLogSchema);
 
-// 🛡️ الميدل وير الذكي: استبعاد الآدمن، وخدمات الكرون (Cron-Jobs / Uptime Robots) من الإحصائيات
+// منع احتساب الـ Uptime Robots وزيارات الأدمن
 app.use(async (req, res, next) => {
   const userAgent = req.headers['user-agent'] || '';
   const isGet = req.method === 'GET';
   const isDataApi = req.url.startsWith('/api/data');
   const isHome = req.url === '/';
 
-  // التحقق إن كان الرابط يخص لوحة الإدارة أو البوت التلقائي لتحديث الخادم
-  const isLogRobot = userAgent.toLowerCase().includes('robot') || 
-                      userAgent.toLowerCase().includes('cron') || 
-                      userAgent.toLowerCase().includes('ping') ||
-                      req.headers['x-admin-request'] === 'true';
+  const isSystemPingOrAdmin = userAgent.toLowerCase().includes('robot') || 
+                              userAgent.toLowerCase().includes('cron') || 
+                              userAgent.toLowerCase().includes('ping') ||
+                              userAgent.toLowerCase().includes('uptimerobot') ||
+                              req.headers['x-admin-request'] === 'true';
 
-  if (isGet && (isHome || isDataApi) && !isLogRobot) {
+  if (isGet && (isHome || isDataApi) && !isSystemPingOrAdmin) {
     try {
       const now = new Date();
       await VisitorLogModel.create({
@@ -71,7 +71,7 @@ app.use(async (req, res, next) => {
         ipHash: req.headers['x-forwarded-for'] || req.socket.remoteAddress
       });
     } catch (e) {
-      console.error('Visitor tracking error:', e);
+      console.error('Visitor logging bypassed:', e);
     }
   }
   next();
@@ -81,25 +81,28 @@ app.get('/api/data', async (_req, res) => {
   try {
     const record = await StoreDataModel.findOne({ key: 'main_storefront_data' });
     res.json({ success: true, data: record ? record.data : null });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err });
-  }
+  } catch (err) { res.status(500).json({ success: false, error: err }); }
 });
 
 app.post('/api/data', async (req, res) => {
   try {
     const payload = req.body;
     if (!payload) return res.status(400).json({ success: false, error: 'Empty payload' });
-
     const result = await StoreDataModel.findOneAndUpdate(
       { key: 'main_storefront_data' },
       { data: payload, updatedAt: new Date().toISOString() },
       { upsert: true, new: true, overwrite: true }
     );
-    res.json({ success: true, message: 'تم التحديث بنجاح', updatedAt: result.updatedAt });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err });
-  }
+    res.json({ success: true, message: 'تم الحفظ بنجاح', updatedAt: result.updatedAt });
+  } catch (err) { res.status(500).json({ success: false, error: err }); }
+});
+
+// 🗑️ رابط تصفير عداد الزوار وحذف السجلات من MongoDB للأبد
+app.delete('/api/analytics', async (_req, res) => {
+  try {
+    await VisitorLogModel.deleteMany({});
+    res.json({ success: true, message: 'تم تصفير عداد الزوار بنجاح ومسح كافة السجلات السحابية!' });
+  } catch (err) { res.status(500).json({ success: false, error: err }); }
 });
 
 app.get('/api/analytics', async (_req, res) => {
@@ -137,9 +140,7 @@ app.get('/api/analytics', async (_req, res) => {
       },
       charts: { hourlyDistribution }
     });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err });
-  }
+  } catch (err) { res.status(500).json({ success: false, error: err }); }
 });
 
 async function startServer() {
