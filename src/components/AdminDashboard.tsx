@@ -4,32 +4,21 @@ import { Sliders, Palette, Share2, Package, Store, DollarSign, Users, Plus, Lock
 
 export const AdminDashboard: React.FC = () => {
   const { siteConfig, updateSiteConfig, products, addProduct, deleteProduct, stores, addStore, deleteStore, orders, confirmOrderAsAdmin, subscribers, sendSaturdayNewsletter, customElements, addCustomElement, deleteCustomElement, isLiveEditorActive, setIsLiveEditorActive, setIsAdminRoute, isAdminLoggedIn, adminLogin, changeAdminPassword, adminLogout } = useApp();
-  const [pin, setPin] = useState(''); 
-  const [pass, setPass] = useState(''); 
-  const [tab, setTab] = useState('branding');
-  const [form, setForm] = useState<any>({ ...siteConfig }); 
-  const [pModal, setPModal] = useState(false); 
-  const [sModal, setSModal] = useState(false);
-  const [elTitle, setElTitle] = useState(''); 
-  const [elBtn, setElButton] = useState(''); 
-  const [elTar, setElTarget] = useState('');
-  const [stF, setStForm] = useState<any>({}); 
-  const [pdF, setPdForm] = useState<any>({}); 
-  const [analytics, setAnalytics] = useState<any>(null);
+  const [pin, setPin] = useState(''); const [pass, setPass] = useState(''); const [tab, setTab] = useState('branding');
+  const [form, setForm] = useState<any>({ ...siteConfig }); const [pModal, setPModal] = useState(false); const [sModal, setSModal] = useState(false);
+  const [elTitle, setElTitle] = useState(''); const [elBtn, setElButton] = useState(''); const [elTar, setElTarget] = useState('');
+  const [stF, setStForm] = useState<any>({}); const [pdF, setPdForm] = useState<any>({}); const [analytics, setAnalytics] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // تم تصحيح تضارب أسماء المتغيرات لمنع انهيار مفسر الموبايل
   useEffect(() => {
     fetch('/api/analytics', { headers: { 'x-admin-request': 'true' } })
-      .then(res => res.json())
-      .then(d => { if (d && d.success) setAnalytics(d.summary); })
-      .catch(err => console.error(err));
+      .then(res => res.json()).then(d => { if (d && d.success) setAnalytics(d.summary); });
   }, [refreshKey, pModal, sModal]);
 
   const handleReset = () => {
     if (window.confirm('⚠️ هل أنت متأكد من تصفير العداد السحابي نهائياً؟')) {
-      fetch('/api/analytics', { method: 'DELETE' })
-        .then(res => res.json())
-        .then(d => { if (d && d.success) { alert(d.message); setRefreshKey(prev => prev + 1); } });
+      fetch('/api/analytics', { method: 'DELETE' }).then(res => res.json()).then(d => { if (d && d.success) { alert(d.message); setRefreshKey(prev => prev + 1); } });
     }
   };
   if (!isAdminLoggedIn) {
@@ -66,7 +55,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center px-1"><span className="text-slate-400 font-bold">📊 إحصائيات رصد زوار المنصة الفعليين (مفلترة):</span><button onClick={handleReset} className="px-2.5 py-1 bg-rose-950/50 text-rose-400 border border-rose-800 font-black rounded-lg flex items-center gap-1 cursor-pointer"><RefreshCw className="w-3 h-3" /> تصفير عداد الزوار السحابي 🗑️</button></div>
+      <div className="flex justify-between items-center px-1"><span className="text-slate-400 font-bold">📊 إحصائيات رصد زوار المنصة الفعليين:</span><button onClick={handleReset} className="px-2.5 py-1 bg-rose-950/50 text-rose-400 border border-rose-800 font-black rounded-lg flex items-center gap-1 cursor-pointer"><RefreshCw className="w-3 h-3" /> تصفير عداد الزوار السحابي 🗑️</button></div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center gap-3"><Users className="text-cyan-400" /><div><span className="text-[10px] text-slate-400 block">الزيارات الحقيقية</span><span className="font-black text-white">{analytics?.total || 0}</span></div></div>
         <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center gap-3"><Eye className="text-green-400" /><div><span className="text-[10px] text-slate-400 block">زيارات اليوم</span><span className="font-black text-white">{analytics?.today || 0}</span></div></div>
@@ -76,13 +65,13 @@ export const AdminDashboard: React.FC = () => {
 
       <div className="flex gap-1.5 overflow-x-auto pb-1 font-bold no-scrollbar">
         {[ {id:'branding', l:'🎨 المظهر'}, {id:'contacts', l:'📞 الروابط والشبكات'}, {id:'products', l:'📦 الأجهزة'}, {id:'stores', l:'🏪 المتاجر'}, {id:'orders', l:'💰 فواتير العمولات'}, {id:'subscribers', l:'👥 النشرة'}, {id:'builder', l:'🛠️ باني الأقسام'}, {id:'security', l:'🔒 الأمان'} ].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} className={`px-3 py-2 rounded-xl border whitespace-nowrap cursor-pointer ${tab === t.id ? 'bg-cyan-500 text-slate-950 border-cyan-400':'bg-slate-900 text-slate-300 border-slate-800'}`}>{t.l}</button>
+          <button key={t.id} onClick={() => setTab(t.id)} className={`px-3 py-2 rounded-xl border whitespace-nowrap cursor-pointer ${tab === t.id ? 'bg-cyan-50 text-slate-950 border-cyan-400':'bg-slate-900 text-slate-300 border-slate-800'}`}>{t.l}</button>
         ))}
       </div>
       {tab === 'branding' && (
         <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-3">
-          <div><label className="text-slate-400 block mb-1">اسم المنصة الكبرى:</label><input type="text" value={form.brandName || "فارغ"} onChange={e => setForm({...form, brandName:e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-cyan-500" /></div>
-          <div><label className="text-slate-400 block mb-1">شريط الإعلان وضمان الأسعار العلوية للزبائن:</label><textarea rows={2} value={form.announcementText || "لا يوجد إعلان حالي"} onChange={e => setForm({...form, announcementText:e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-cyan-500" /></div>
+          <div><label className="text-slate-400 block mb-1">اسم المنصة الكبرى:</label><input type="text" value={form.brandName || ""} onChange={e => setForm({...form, brandName:e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-cyan-500" /></div>
+          <div><label className="text-slate-400 block mb-1">شريط الإعلان وضمان الأسعار العلوية للزبائن:</label><textarea rows={2} value={form.announcementText || ""} onChange={e => setForm({...form, announcementText:e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-cyan-500" /></div>
           <button onClick={() => updateSiteConfig(form)} className="px-4 py-2 bg-cyan-500 text-slate-950 font-bold rounded-xl cursor-pointer hover:bg-cyan-400 shadow">حفظ التغييرات</button>
         </div>
       )}
@@ -91,11 +80,11 @@ export const AdminDashboard: React.FC = () => {
         <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
           <h3 className="font-bold text-cyan-400">🔗 إعدادات الروابط وشبكات تواصل الموقع</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label className="text-slate-400 block mb-1">رقم الواتساب المعتمد للطلب:</label><input type="text" value={form.whatsAppNumber || "فارغ"} onChange={e => setForm({...form, whatsAppNumber:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white font-mono border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
-            <div><label className="text-slate-400 block mb-1">رابط مسنجر الفيسبوك (m.me):</label><input type="text" value={form.messengerUrl || "فارغ"} onChange={e => setForm({...form, messengerUrl:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white font-mono border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
-            <div><label className="text-slate-400 block mb-1">رابط صفحة الفيسبوك العامة:</label><input type="text" value={form.facebookPageUrl || "لا يوجد"} onChange={e => setForm({...form, facebookPageUrl:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
-            <div><label className="text-slate-400 block mb-1">رابط حساب الإنستغرام:</label><input type="text" value={form.instagramPageUrl || "لا يوجد"} onChange={e => setForm({...form, instagramPageUrl:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
-            <div className="sm:col-span-2"><label className="text-slate-400 block mb-1">البريد الإلكتروني للإشعارات (الإيميل):</label><input type="email" value={form.adminNotificationEmail || "فارغ"} onChange={e => setForm({...form, adminNotificationEmail:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white font-mono border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
+            <div><label className="text-slate-400 block mb-1">رقم الواتساب المعتمد للطلب:</label><input type="text" value={form.whatsAppNumber || ""} onChange={e => setForm({...form, whatsAppNumber:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white font-mono border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
+            <div><label className="text-slate-400 block mb-1">رابط مسنجر الفيسبوك (m.me):</label><input type="text" value={form.messengerUrl || ""} onChange={e => setForm({...form, messengerUrl:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white font-mono border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
+            <div><label className="text-slate-400 block mb-1">رابط صفحة الفيسبوك العامة:</label><input type="text" value={form.facebookPageUrl || ""} onChange={e => setForm({...form, facebookPageUrl:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
+            <div><label className="text-slate-400 block mb-1">رابط حساب الإنستغرام:</label><input type="text" value={form.instagramPageUrl || ""} onChange={e => setForm({...form, instagramPageUrl:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
+            <div className="sm:col-span-2"><label className="text-slate-400 block mb-1">البريد الإلكتروني للإشعارات (الإيميل):</label><input type="email" value={form.adminNotificationEmail || ""} onChange={e => setForm({...form, adminNotificationEmail:e.target.value})} className="w-full bg-slate-950 p-2 rounded-lg text-white font-mono border border-slate-800 focus:outline-none focus:border-cyan-500" /></div>
           </div>
           <button onClick={() => updateSiteConfig(form)} className="px-4 py-2 bg-cyan-500 text-slate-950 font-bold rounded-xl cursor-pointer hover:bg-cyan-400 shadow">حفظ وتطبيق قنوات التواصل</button>
         </div>
@@ -103,11 +92,11 @@ export const AdminDashboard: React.FC = () => {
       {tab === 'products' && (
         <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
           <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-            <div><h3 className="font-bold text-white">📦 كتالوج الأجهزة السحابي الموحد</h3><p className="text-[11px] text-slate-400">نظام الحذف النهائي الصارم يمنع تكرار العروض المحذوفة تماماً</p></div>
+            <div><h3 className="font-bold text-white">📦 كتالوج الأجهزة السحابي الموحد</h3><p className="text-[11px] text-slate-400">حذف فوري صارم (Overwrite) يمنع بقاء العناصر المعلقة</p></div>
             <button onClick={() => setPModal(true)} className="px-3 py-1.5 bg-cyan-500 text-slate-950 font-bold rounded-xl flex items-center gap-1 cursor-pointer hover:bg-cyan-400"><Plus className="w-3.5 h-3.5" /> إضافة جهاز تفصيلي</button>
           </div>
           <div className="space-y-2">
-            {products.length === 0 ? <p className="text-slate-500 text-center py-2 font-medium">لا يوجد منتجات حالياً (فارغ)</p> : products.map(p => (
+            {products.length === 0 ? <p className="text-slate-500 text-center py-2 font-medium">لا يوجد منتجات حالياً في قاعدة البيانات (فارغ)</p> : products.map(p => (
               <div key={p.id} className="p-2.5 bg-slate-950/60 rounded-xl border border-slate-800 flex justify-between items-center shadow-inner">
                 <span className="font-bold text-slate-200">{p.name} <span className="text-cyan-400 font-mono">\${p.price}</span></span>
                 <button onClick={() => deleteProduct(p.id)} className="p-1.5 bg-rose-950/40 text-rose-400 rounded-lg cursor-pointer hover:bg-rose-900/40"><Trash2 className="w-4 h-4" /></button>
@@ -120,8 +109,8 @@ export const AdminDashboard: React.FC = () => {
       {tab === 'stores' && (
         <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
           <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-            <div><h3 className="font-bold text-white">🏪 شبكة المتاجر الشريكة المعتمدة</h3><p className="text-[11px] text-slate-400">إضافة وحذف مكاتب ومراكز الهاردوير المرتبطة بالمنصة</p></div>
-            <button onClick={() => setSModal(true)} className="px-3 py-1.5 bg-cyan-500 text-slate-950 font-bold rounded-xl flex items-center gap-1 cursor-pointer hover:bg-cyan-400"><Plus className="w-3.5 h-3.5" /> إضافة متجر شريك</button>
+            <div><h3 className="font-bold text-white">🏪 شبكة المتاجر الشريكة المعتمدة</h3><p className="text-[11px] text-slate-400">إضافة وحذف مكاتب ومراكز الهاردوير المرتبطة بنظام الوساطة</p></div>
+            <button onClick={() => setSModal(true)} className="px-3 py-1.5 bg-cyan-500 text-slate-950 font-bold rounded-xl flex items-center gap-1 cursor-pointer hover:bg-cyan-400"><Plus className="w-3.5 h-3.5" /> إضافة متجر</button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {stores.length === 0 ? <p className="text-slate-500 text-center py-4 sm:col-span-2 font-medium">لا يوجد متاجر شريكة حالياً (السجل فارغ)</p> : stores.map(s => (
@@ -192,9 +181,9 @@ export const AdminDashboard: React.FC = () => {
               <div><label className="text-slate-400 block mb-1">اسم وموديل اللابتوب:</label><input type="text" placeholder="Asus ROG Strix G16" onChange={e => setPdForm({...pdF, name: e.target.value})} className="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-white focus:outline-none" /></div>
               <div>
                 <label className="text-slate-400 block mb-1">المتجر البائع المعتمد لديك:</label>
-                <select onChange={e => { const st = stores.find(s => s.id === e.target.value); if(st) setPdForm({...pdF, storeId: st.id, storeName: st.name}); }} className="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-white focus:outline-none">
+                <select onChange={e => { const st = stores?.find(s => s.id === e.target.value); if(st) setPdForm({...pdF, storeId: st.id, storeName: st.name}); }} className="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-white focus:outline-none">
                   <option value="">-- اختر من المتاجر المضافة لديك --</option>
-                  {stores.map(s => <option key={s.id} value={s.id}>{s.name} ({s.city})</option>)}
+                  {stores?.map(s => <option key={s.id} value={s.id}>{s.name} ({s.city})</option>)}
                 </select>
               </div>
               <div><label className="text-slate-400 block mb-1">السعر النهائي بالدولار (\$):</label><input type="number" placeholder="1400" onChange={e => setPdForm({...pdF, price: Number(e.target.value)})} className="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-white font-mono focus:outline-none" /></div>
