@@ -1,16 +1,5 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { useApp } from '../context/AppContext';
-
-// داخل المكون الإداري:
-const { isLiveEditorActive, setIsLiveEditorActive } = useApp();
-
-<button 
-  onClick={() => setIsLiveEditorActive(!isLiveEditorActive)}
-  className="px-4 py-2 bg-cyan-600 text-white rounded-xl font-bold text-xs"
->
-  {isLiveEditorActive ? "إغلاق التخصيص الحركي" : "فتح تخصيص الأبعاد والمظهر الحركي 🎨"}
-</button>
 import { Product, PartnerStore, OrderItem, PaymentMethod, CustomBuilderElement } from '../types';
 import { 
   Sliders, 
