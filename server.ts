@@ -46,8 +46,7 @@ const VisitorLogSchema = new mongoose.Schema({
   ipHash: String
 });
 const VisitorLogModel = mongoose.model('VisitorLog', VisitorLogSchema);
-
-// منع احتساب الـ Uptime Robots وزيارات الأدمن
+// ميدل وير فرز وتجاهل الروبوتات وزيارات الأدمن لمنع تخريب العداد الحقيقي
 app.use(async (req, res, next) => {
   const userAgent = req.headers['user-agent'] || '';
   const isGet = req.method === 'GET';
@@ -93,11 +92,10 @@ app.post('/api/data', async (req, res) => {
       { data: payload, updatedAt: new Date().toISOString() },
       { upsert: true, new: true, overwrite: true }
     );
-    res.json({ success: true, message: 'تم الحفظ بنجاح', updatedAt: result.updatedAt });
+    res.json({ success: true, message: 'تم التحديث السحابي بنجاح', updatedAt: result.updatedAt });
   } catch (err) { res.status(500).json({ success: false, error: err }); }
 });
-
-// 🗑️ رابط تصفير عداد الزوار وحذف السجلات من MongoDB للأبد
+// 🗑️ الرابط السحابي المسؤول عن تصفير عداد الزوار ومسح السجلات نهائياً
 app.delete('/api/analytics', async (_req, res) => {
   try {
     await VisitorLogModel.deleteMany({});
