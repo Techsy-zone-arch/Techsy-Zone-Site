@@ -19,20 +19,31 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  // 🛡️ واجهة تسجيل الدخول النظيفة والمصلحة بالكامل للكتابة الفورية من الموبايل
   if (!isAdminLoggedIn) {
     return (
       <div className="min-h-[75vh] flex flex-col items-center justify-center p-4 bg-slate-950 text-white text-xs" dir="rtl">
-        <div className="w-full max-w-md p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-4">
-          <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mx-auto"><Lock /></div>
-          <h2 className="text-sm font-black">بوابة إدارة TechsyZone السحابية</h2>
+        <div className="w-full max-w-md p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-4 shadow-2xl">
+          <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mx-auto"><Lock className="w-5 h-5" /></div>
+          <h2 className="text-sm font-black text-slate-200">بوابة إدارة TechsyZone السحابية</h2>
           <form onSubmit={e => { e.preventDefault(); adminLogin(pin); }} className="space-y-3">
-            <input type="password" required value={pin} onChange={e => setPin} placeholder="أدخل رمز الحماية" className="w-full p-3 bg-slate-950 rounded-xl text-center border border-slate-800 text-white font-mono" />
-            <button type="submit" className="w-full p-3 bg-cyan-500 text-slate-950 font-black rounded-xl">دخول المدير ←</button>
+            <input 
+              type="password" 
+              required 
+              value={pin} 
+              onChange={e => setPin(e.target.value)} 
+              placeholder="أدخل رمز الحماية الفاخر للإدارة" 
+              className="w-full p-3 bg-slate-950 rounded-xl text-center border border-slate-800 text-white font-mono focus:outline-none focus:border-cyan-500" 
+            />
+            <button type="submit" className="w-full p-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black rounded-xl cursor-pointer transition-colors shadow-lg shadow-cyan-500/10">
+              دخول المدير ←
+            </button>
           </form>
         </div>
       </div>
     );
   }
+
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 text-right text-white text-xs" dir="rtl">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b border-slate-800 pb-4">
